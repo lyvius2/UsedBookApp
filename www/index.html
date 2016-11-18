@@ -50,16 +50,32 @@
             </label>
           </form>
         </div>
-        <!--<div class="list">
-          <a href="#" class="item item-thumbnail-left" ng-repeat="book in sc.findBookList.rss.channel.item" style="padding-left: 80px;">
-            <img src="{{book.image}}" alt="{{book.title}}" style="max-width: 54px;">
-            <h2 ng-bind="book.title"></h2>
-            <p ng-bind="book.author"></p>
-            <p ng-bind="book.publisher"></p>
-            <p ng-bind="book.isbn|limitTo:24:10"></p>
-          </a>
-        </div>-->
-
+        <div class="card">
+          <div class="item item-divider">
+            Book Title
+          </div>
+          <div class="item row">
+            <div class="col text-right">7,200원</div>
+            <div class="col text-right">6,800원</div>
+            <div class="col text-right">500원</div>
+            <div class="col text-right">1,000원</div>
+          </div>
+          <div class="item row">
+            <div class="col text-left">1122344556789</div>
+            <div class="col text-right">
+              <label class="item item-input item-select">
+                <div class="input-label">
+                  책 상태
+                </div>
+                <select name="" id="">
+                  <option value="">최상</option>
+                  <option value="">중상</option>
+                  <option value="">하</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        </div>
       </ion-content>
     </ion-pane>
 

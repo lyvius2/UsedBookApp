@@ -20,9 +20,20 @@ var app = angular.module('starter', ['ionic'])
       StatusBar.styleDefault();
     }
   });
-}).controller('starterCtrl', function($scope, $http, $ionicModal, $timeout, $ionicLoading, $ionicScrollDelegate){
+}).controller('starterCtrl', function($scope, $http, $ionicModal, $timeout, $ionicLoading, $ionicScrollDelegate, $ionicPopup){
   var parent = this;
   var start = 1;
+
+  var showAlert = function(title, msg, callback) {
+    var alertPopup = $ionicPopup.alert({
+      title: title,
+      template: msg
+    });
+
+    alertPopup.then(function(res) {
+      return callback(res);
+    });
+  };
 
   var loading = function(callback) {
     $ionicLoading.show({
@@ -53,7 +64,13 @@ var app = angular.module('starter', ['ionic'])
       } else if(parent.findBookList.rss) {
         parent.findBookList.rss.channel.item = parent.findBookList.rss.channel.item.concat(data.rss.channel.item);
       }
-      if(parent.findBookList.rss.channel.item.length < parent.findBookList.rss.channel.total) start = data.rss.channel.start + data.rss.channel.display;
+      if(data.rss.channel.total > 0 && parent.findBookList.rss.channel.item.length < parent.findBookList.rss.channel.total) {
+        start = data.rss.channel.start + data.rss.channel.display;
+      } else if(data.rss.channel.total == 0) {
+        showAlert('검색 결과가 없습니다.', '다시 검색해주십시오.', function(res){
+          parent.closeResultModal();
+        });
+      }
       $ionicLoading.hide();
       angular.element('#findBookLayer').on('scroll', scrollHandler);
     }
@@ -96,6 +113,7 @@ var app = angular.module('starter', ['ionic'])
     parent.findBookList = null;
     start = 1;
     $ionicScrollDelegate.$getByHandle('findBookScroll').scrollTop();
+    angular.element('#findBookLayer').off('scroll');
   });
 
   angular.element(document.forms[0]).on('submit', function(e){
