@@ -20,7 +20,7 @@ var app = angular.module('starter', ['ionic'])
       StatusBar.styleDefault();
     }
   });
-}).controller('starterCtrl', function($scope, $http, $ionicModal, $timeout, $ionicLoading, $ionicScrollDelegate, $ionicPopup){
+}).controller('starterCtrl', function($scope, $http, $ionicModal, $timeout, $ionicLoading, $ionicScrollDelegate, $ionicPopup, $ionicActionSheet){
   var parent = this;
   var start = 1;
 
@@ -78,12 +78,14 @@ var app = angular.module('starter', ['ionic'])
   };
 
   this.findBookList = null;
+  this.sellBookList = new Array();
 
   this.find = function(searchText, callback) {
     loading(function(){
       console.log('start', start);
-      var uri = 'https://usedbookserver.herokuapp.com/api?callback=JSON_CALLBACK'
-      $http.jsonp('http://localhost:3000/api?callback=JSON_CALLBACK', {params:{keyword:searchText,start:start}})
+      var uri = 'https://usedbookserver.herokuapp.com/api?callback=JSON_CALLBACK';
+      //$http.jsonp('http://localhost:3000/api?callback=JSON_CALLBACK', {params:{keyword:searchText,start:start}})
+      $http.jsonp(uri, {params:{keyword:searchText,start:start}})
         .then(function(result){
           return callback(null, result.data);
         }, function(error){
@@ -102,6 +104,29 @@ var app = angular.module('starter', ['ionic'])
     $scope.modal.hide();
   };
 
+  this.selectBook = function(obj){
+    console.log('seleted Object', obj);
+    var hideSheet = $ionicActionSheet.show({
+      buttons: [
+        {text: '판매가 검색'}
+      ],
+      titleText: '매입 목록에 추가',
+      destructiveText: '취소',
+      buttonClicked: function(){
+        parent.sellBookList.push(obj);
+        parent.closeResultModal();
+        return true;
+      },
+      destructiveButtonClicked: function(){
+        return true;
+      }
+    });
+
+    $timeout(function(){
+      hideSheet();
+    }, 10000);
+  };
+
   $ionicModal.fromTemplateUrl('findBookResult.html', {
     scope: $scope,
     animation:'slide-in-up'
@@ -110,6 +135,7 @@ var app = angular.module('starter', ['ionic'])
   });
 
   $scope.$on('modal.hidden', function() {
+    parent.searchText = '';
     parent.findBookList = null;
     start = 1;
     $ionicScrollDelegate.$getByHandle('findBookScroll').scrollTop();

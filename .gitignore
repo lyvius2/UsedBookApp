@@ -5,3 +5,5 @@ node_modules/
 platforms/
 plugins/
 .idea/
+.io-config.json
+ionic.config.json
