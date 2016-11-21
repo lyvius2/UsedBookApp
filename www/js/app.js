@@ -20,7 +20,7 @@ var app = angular.module('starter', ['ionic'])
       StatusBar.styleDefault();
     }
   });
-}).controller('starterCtrl', function($scope, $http, $ionicModal, $timeout, $ionicLoading, $ionicScrollDelegate, $ionicPopup, $ionicActionSheet){
+}).controller('starterCtrl', function($scope, $http, $q, $ionicModal, $timeout, $ionicLoading, $ionicScrollDelegate, $ionicPopup, $ionicActionSheet){
   var parent = this;
   var start = 1;
 
@@ -77,6 +77,35 @@ var app = angular.module('starter', ['ionic'])
     return;
   };
 
+  var inquiryPriceHandler = function(isbn, callback) {
+    var getSellPrice = function(flatform){
+      return $http.jsonp('https://usedbookserver.herokuapp.com/sellPrice?callback=JSON_CALLBACK', {params:{flatform:flatform,keyword:isbn}});
+    };
+
+    var serviceList = new Array();
+    ['al','y2','ip'].forEach(function(item){
+      serviceList.push(getSellPrice(item));
+    });
+    $q.all(serviceList).then(function(results){
+      results = results.reduce(function(prev, next) {
+        var value = null;
+        if(typeof next.data.data == 'object' && next.data.data.length > 0){
+          value = {
+            available:next.data.data[0].available,
+            bestPrice:next.data.data[0].bestPrice,
+            normalPrice:next.data.data[0].normalPrice,
+            lowPrice:next.data.data[0].lowPrice
+          };
+        }
+        prev.push(value);
+        return prev;
+      }, []);
+      return callback(null, results);
+    }, function(error){
+      return callback(error);
+    });
+  };
+
   this.findBookList = null;
   this.sellBookList = new Array();
 
@@ -104,8 +133,7 @@ var app = angular.module('starter', ['ionic'])
     $scope.modal.hide();
   };
 
-  this.selectBook = function(obj){
-    console.log('seleted Object', obj);
+  this.selectBook = function(obj, isbn){
     var hideSheet = $ionicActionSheet.show({
       buttons: [
         {text: '판매가 검색'}
@@ -113,8 +141,22 @@ var app = angular.module('starter', ['ionic'])
       titleText: '매입 목록에 추가',
       destructiveText: '취소',
       buttonClicked: function(){
-        parent.sellBookList.push(obj);
-        parent.closeResultModal();
+        loading(function(){
+          inquiryPriceHandler(isbn, function(error, data){
+            $ionicLoading.hide();
+            if(error) {
+              console.log(error);
+            } else {
+              obj.aladin = data[0];
+              obj.yes24 = data[1];
+              obj.interpatk = data[2];
+              obj.status = 'bestPrice';
+              parent.sellBookList.push(obj);
+              console.log('sellBookList', parent.sellBookList);
+            }
+            parent.closeResultModal();
+          });
+        });
         return true;
       },
       destructiveButtonClicked: function(){
@@ -124,7 +166,7 @@ var app = angular.module('starter', ['ionic'])
 
     $timeout(function(){
       hideSheet();
-    }, 10000);
+    }, 5000);
   };
 
   $ionicModal.fromTemplateUrl('findBookResult.html', {
