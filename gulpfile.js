@@ -6,6 +6,7 @@ var sass = require('gulp-sass');
 var minifyCss = require('gulp-minify-css');
 var rename = require('gulp-rename');
 var sh = require('shelljs');
+var uglify = require('gulp-uglify');
 
 var paths = {
   sass: ['./scss/**/*.scss']
@@ -48,4 +49,14 @@ gulp.task('git-check', function(done) {
     process.exit(1);
   }
   done();
+});
+
+gulp.task('library-build', function(){
+  var path = './node_modules';
+  var jsList = new Array();
+  jsList.push(path+'/validator/validator.js');
+  return gulp.src(jsList)
+    .pipe(concat('libs.js'))
+    .pipe(uglify())
+    .pipe(gulp.dest('./www/lib'));
 });
