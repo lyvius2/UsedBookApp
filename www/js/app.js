@@ -121,7 +121,7 @@ var app = angular.module('starter', ['ionic'])
           normalPrice:item.normalPrice,
           lowPrice:item.lowPrice
         };
-      } else if(typeof next.data.result == 'object' && typeof next.data.result.length != 'undefined'){  // 반디앤루니스
+      } else if(typeof next.data.result == 'object' && typeof next.data.result.length != 'undefined' && next.data.count > 0){  // 반디앤루니스
         item = next.data.result[0];
         value = {
           available:(item.buy_rate != '' && item.buy_rate != '0')?true:false,
