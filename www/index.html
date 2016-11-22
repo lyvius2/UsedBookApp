@@ -19,16 +19,18 @@
     <link href="lib/ionic/css/ionic.css" rel="stylesheet">
     <link href="css/font-awesome.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
+
     <style>
       .book_store_logo { max-width: 45px; }
       .book_store_price { padding: 0px; margin: 0px; }
-      .book_store_price p { font-size: 12px; }
+      .book_store_price p { font-size: 12px; font-weight: bold; }
     </style>
     <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
     <link href="css/ionic.app.css" rel="stylesheet">
     -->
 
     <script src="lib/jquery-3.1.1.min.js"></script>
+    <script src="lib/libs.js"></script>
     <!-- ionic/angularjs js -->
     <script src="lib/ionic/js/ionic.bundle.js"></script>
 
@@ -38,7 +40,7 @@
     <!-- your app's js -->
     <!--<script src="js/app.js"></script>-->
   </head>
-  <body ng-controller="starterCtrl as sc" ng-cloak>
+  <body ng-controller="starterCtrl as sc" ng-cloak="">
 
     <ion-pane>
       <ion-header-bar class="bar-stable">
@@ -55,17 +57,26 @@
           </form>
         </div>
 
-        <div class="card" ng-repeat="sell in sc.sellBookList" ng-cloak>
+        <div class="card" ng-repeat="sell in sc.sellBookList" ng-cloak="">
           <div class="item item-thumbnail-left" style="padding-top: 8px; padding-left: 74px; padding-right: 0px; padding-bottom: 8px;">
             <img src="{{sell.image}}" alt="{{sell.title}}" style="max-width: 54px;">
             <h2 ng-bind="sell.title" style="margin-right: 8px;"></h2>
-            <p ng-bind="'ISBN:' + (sell.isbn|limitTo:24:10)"></p>
+            <p ng-bind="'ISBN: ' + sell.isbn"></p>
             <p style="position: absolute; top:5px; right:5px;">
               <i class="fa fa-remove"></i>
             </p>
-            <button class="button button-outline button-small button-assertive" style="padding-top: 0px; padding-bottom: 0px;">
-              품질등급 : 최상 <i class="fa fa-arrow-down"></i>
-            </button>
+            <div class="button-bar button-outline bar-energized" style="width: 80%; padding-right: 8px;">
+              <a href="#" data="1" class="button button-small" ng-class="{'button-assertive':sell.status=='bestPrice'}" ng-click="sc.changeStatus($event, sell, 'bestPrice', this)">
+                <i class="fa fa-angle-double-up"></i> 최상
+              </a>
+              <a href="#" data="2" class="button button-small" ng-class="{'button-assertive':sell.status=='normalPrice'}" ng-click="sc.changeStatus($event, sell, 'normalPrice', this)">
+                <i class="fa fa-angle-up"></i> 중상
+              </a>
+              <a href="#" data="3" class="button button-small" ng-class="{'button-assertive':sell.status=='lowPrice'}" ng-click="sc.changeStatus($event, sell, 'lowPrice', this)">
+                <i class="fa fa-angle-down"></i> 상
+              </a>
+            </div>
+            </p>
             <div class="row">
               <div class="col col-25 text-center" style="padding: 0px;"><img class="book_store_logo" src="./img/aladin_logo.png" alt="알라딘"></div>
               <div class="col col-25 text-center" style="padding: 0px;"><img class="book_store_logo" src="./img/yes24_logo.png" alt="Yes24"></div>
@@ -73,10 +84,26 @@
               <div class="col col-25 text-center" style="padding: 0px;"><img class="book_store_logo" src="./img/interpark_logo.png" alt="인터파크"></div>
             </div>
             <div class="row book_store_price">
-              <div class="col col-25 text-center book_store_price"><p>0,000원</p></div>
-              <div class="col col-25 text-center book_store_price"><p>0,000원</p></div>
-              <div class="col col-25 text-center book_store_price"><p>0,000원</p></div>
-              <div class="col col-25 text-center book_store_price"><p>0,000원</p></div>
+              <div class="col col-25 text-center book_store_price">
+                <p ng-if="sell.aladin==null" style="color: #69717d;">검색안됨</p>
+                <p ng-if="sell.aladin.available==false" style="color: #ef473a;">매입불가</p>
+                <p ng-if="sell.aladin.available==true">{{sc.getPriceByStatus(sell.aladin, sell.status)|currency :'':0}}<span style="color: #009689;">원</span></p>
+              </div>
+              <div class="col col-25 text-center book_store_price">
+                <p ng-if="sell.yes24==null" style="color: #69717d;">검색안됨</p>
+                <p ng-if="sell.yes24.available==false" style="color: #ef473a;">매입불가</p>
+                <p ng-if="sell.yes24.available==true">{{sc.getPriceByStatus(sell.yes24, sell.status)|currency :'':0}}<span style="color: #009689;">원</span></p>
+              </div>
+              <div class="col col-25 text-center book_store_price">
+                <p ng-if="sell.bandi==null" style="color: #69717d;">검색안됨</p>
+                <p ng-if="sell.bandi.available==false" style="color: #ef473a;">매입불가</p>
+                <p ng-if="sell.bandi.available==true">{{sell.bandi.lowPrice|currency :'':0}}<span style="color: #009689;">원</span></p>
+              </div>
+              <div class="col col-25 text-center book_store_price">
+                <p ng-if="sell.interpark==null" style="color: #69717d;">검색안됨</p>
+                <p ng-if="sell.interpark.available==false" style="color: #ef473a;">매입불가</p>
+                <p ng-if="sell.interpark.available==true">{{sell.interpark.lowPrice|currency :'':0}}<span style="color: #009689;">원</span></p>
+              </div>
             </div>
           </div>
         </div>
