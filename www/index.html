@@ -119,12 +119,12 @@
         </ion-header-bar>
         <ion-content id="findBookLayer" delegate-handle="findBookScroll">
           <div class="list">
-            <a href="#" class="item item-thumbnail-left" ng-repeat="book in sc.findBookList.rss.channel.item" style="padding-left: 80px;" ng-click="sc.selectBook(book, (book.isbn|limitTo:24:10))">
+            <a href="#" class="item item-thumbnail-left" ng-repeat="book in sc.findBookList.rss.channel.item" style="padding-left: 80px;" ng-click="sc.selectBook(book)">
               <img src="{{book.image}}" alt="{{book.title}}" style="max-width: 54px;">
               <h2 ng-bind="book.title"></h2>
               <p ng-bind="book.author"></p>
               <p ng-bind="book.publisher"></p>
-              <p ng-bind="'ISBN:' + (book.isbn|limitTo:24:10)"></p>
+              <p ng-bind="'ISBN:' + book.isbn13"></p>
             </a>
           </div>
         </ion-content>

@@ -35,11 +35,11 @@ var app = angular.module('starter', ['ionic'])
     });
   };
 
-  var loading = function(word, callback) {
+  var loading = function(word, targetObj, callback) {
     $ionicLoading.show({
       template: '<i class="fa fa-refresh fa-spin fa-fw light"></i> ' + word + '...'
     }).then(function(){
-      return callback();
+      return callback(targetObj);
     })
   };
 
@@ -54,6 +54,26 @@ var app = angular.module('starter', ['ionic'])
     }
   };
 
+  var checkPriceSuccessHandler = function(targetObj) {
+    var isbn = targetObj.isbn13;
+    if(!isbn) isbn = targetObj.isbn10;
+    inquiryPrice(isbn, function(error, data){
+      $ionicLoading.hide();
+      if(error) {
+        console.log(error);
+      } else {
+        targetObj.aladin = data[0];
+        targetObj.yes24 = data[1];
+        targetObj.interpark = data[2];
+        targetObj.bandi = data[3];
+        targetObj.status = 'bestPrice';
+        parent.sellBookList.push(targetObj);
+      }
+      parent.closeResultModal();
+      return;
+    });
+  };
+
   var findSuccessHandler = function(error, data) {
     if(error) {
       console.log(error);
@@ -62,25 +82,7 @@ var app = angular.module('starter', ['ionic'])
       if(parent.findBookList == null) {
         parent.findBookList = data;
         if(typeof parent.findBookList.rss.channel.item.length == 'undefined') {
-          var item = parent.findBookList.rss.channel.item;
-          var isbn = item.isbn13;
-          if(!isbn) isbn = item.isbn10;
-          loading('Checking price', function(){
-            inquiryPrice(isbn, function(error, data){
-              $ionicLoading.hide();
-              if(error) {
-                console.log(error);
-              } else {
-                item.aladin = data[0];
-                item.yes24 = data[1];
-                item.interpark = data[2];
-                item.bandi = data[3];
-                item.status = 'bestPrice';
-                parent.sellBookList.push(item);
-              }
-            });
-          });
-          console.log(parent.findBookList.rss.channel.item.isbn13);
+          loading('Checking Price', parent.findBookList.rss.channel.item, checkPriceSuccessHandler);
         } else {
           parent.openResultModal();
         }
@@ -148,7 +150,7 @@ var app = angular.module('starter', ['ionic'])
   this.sellBookList = new Array();
 
   this.find = function(searchText, callback) {
-    loading('Searching for a book', function(){
+    loading('Searching for a Book', null, function(){
       var uri = 'https://usedbookserver.herokuapp.com/api?callback=JSON_CALLBACK';
       //$http.jsonp('http://localhost:3000/api?callback=JSON_CALLBACK', {params:{keyword:searchText,start:start}})
       $http.jsonp(uri, {params:{keyword:searchText,start:start}})
@@ -174,28 +176,12 @@ var app = angular.module('starter', ['ionic'])
   this.selectBook = function(obj, isbn){
     var hideSheet = $ionicActionSheet.show({
       buttons: [
-        {text: '판매가 검색'}
+        {text: '매입가 검색'}
       ],
       titleText: '매입 목록에 추가',
       destructiveText: '취소',
       buttonClicked: function(){
-        loading('Checking price', function(){
-          inquiryPrice(isbn, function(error, data){
-            $ionicLoading.hide();
-            if(error) {
-              console.log(error);
-            } else {
-              obj.aladin = data[0];
-              obj.yes24 = data[1];
-              obj.interpark = data[2];
-              obj.bandi = data[3];
-              obj.status = 'bestPrice';
-              parent.sellBookList.push(obj);
-              console.log('sellBookList', parent.sellBookList);
-            }
-            parent.closeResultModal();
-          });
-        });
+        loading('Checking Price', obj, checkPriceSuccessHandler);
         return true;
       },
       destructiveButtonClicked: function(){
@@ -214,12 +200,7 @@ var app = angular.module('starter', ['ionic'])
 
   this.changeStatus = function(event, target, status, dom) {
     event.preventDefault();
-    console.log('event', event);
-    console.log('dom', dom);
     target.status = status;
-    $timeout(function(){
-      $scope.$apply();
-    }, 0);
   };
 
   $ionicModal.fromTemplateUrl('findBookResult.html', {
@@ -240,7 +221,6 @@ var app = angular.module('starter', ['ionic'])
   angular.element(document.forms[0]).on('submit', function(e){
     e.preventDefault();
     document.activeElement.blur();
-    console.log('isISBN?', validator.isISBN(parent.searchText));
     parent.find(parent.searchText, findSuccessHandler);
   });
 });
