@@ -75,23 +75,23 @@ var app = angular.module('starter', ['ionic'])
   };
 
   var findSuccessHandler = function(error, data) {
+    $ionicLoading.hide();
     if(error) {
       console.log(error);
     } else {
-      $ionicLoading.hide();
-      if(parent.findBookList == null) {
-        parent.findBookList = data;
-        if(typeof parent.findBookList.rss.channel.item.length == 'undefined') {
-          loading('Checking Price', parent.findBookList.rss.channel.item, checkPriceSuccessHandler);
-        } else {
-          parent.openResultModal();
+      if(data.rss.channel.total > 0) {
+        if(parent.findBookList == null) {
+          parent.findBookList = data;
+          if(typeof parent.findBookList.rss.channel.item.length == 'undefined') {
+            loading('Checking Price', parent.findBookList.rss.channel.item, checkPriceSuccessHandler);
+          } else {
+            parent.openResultModal();
+          }
+        } else if(parent.findBookList.rss) {
+          parent.findBookList.rss.channel.item = parent.findBookList.rss.channel.item.concat(data.rss.channel.item);
         }
-      } else if(parent.findBookList.rss) {
-        parent.findBookList.rss.channel.item = parent.findBookList.rss.channel.item.concat(data.rss.channel.item);
-      }
-      if(data.rss.channel.total > 0 && parent.findBookList.rss.channel.item.length < parent.findBookList.rss.channel.total) {
-        start = data.rss.channel.start + data.rss.channel.display;
-      } else if(data.rss.channel.total == 0) {
+        if(parent.findBookList.rss.channel.item.length < parent.findBookList.rss.channel.total) start = data.rss.channel.start + data.rss.channel.display;
+      } else {
         showAlert('검색 결과가 없습니다.', '다시 검색해주십시오.', function(res){
           parent.closeResultModal();
         });
@@ -106,26 +106,25 @@ var app = angular.module('starter', ['ionic'])
       return $http.jsonp('https://usedbookserver.herokuapp.com/sellPrice?callback=JSON_CALLBACK', {params:{flatform:flatform,keyword:isbn}});
     };
 
-    var getSellPriceBandi = function(){
-      return $http.jsonp('http://222.122.120.242:7570/ksf/api/search?callback=JSON_CALLBACK', {params:{sn:'usedbook',q:isbn,s:'bpr'}});
-    };
+    var getSellPriceBandi = $http.jsonp('http://222.122.120.242:7570/ksf/api/search?callback=JSON_CALLBACK', {params:{sn:'usedbook',q:isbn,s:'bpr'}});
 
     var priceHandler = function(prev, next) {
       var item, value = null;
-      console.log('next.data', next.data);
       if(typeof next.data.data == 'object' && next.data.data != null && next.data.data.length > 0){   // 3개사
         item = next.data.data[0];
         value = {
           available:item.available,
           bestPrice:item.bestPrice,
           normalPrice:item.normalPrice,
-          lowPrice:item.lowPrice
+          lowPrice:item.lowPrice,
+          selectedPrice:item.bestPrice    // default setting
         };
       } else if(typeof next.data.result == 'object' && typeof next.data.result.length != 'undefined' && next.data.count > 0){  // 반디앤루니스
         item = next.data.result[0];
         value = {
           available:(item.buy_rate != '' && item.buy_rate != '0')?true:false,
-          lowPrice:Number(item.buy_price)
+          bestPrice:Number(item.buy_price),
+          selectedPrice:Number(item.buy_price)    // default setting
         };
       }
       prev.push(value);
@@ -136,7 +135,7 @@ var app = angular.module('starter', ['ionic'])
     ['al','y2','ip'].forEach(function(item){
       serviceList.push(getSellPrice(item));
     });
-    serviceList.push(getSellPriceBandi());
+    serviceList.push(getSellPriceBandi);
 
     $q.all(serviceList).then(function(results){
       results = results.reduce(priceHandler, []);
@@ -173,7 +172,7 @@ var app = angular.module('starter', ['ionic'])
     $scope.modal.hide();
   };
 
-  this.selectBook = function(obj, isbn){
+  this.selectBook = function(obj){
     var hideSheet = $ionicActionSheet.show({
       buttons: [
         {text: '매입가 검색'}
@@ -198,9 +197,33 @@ var app = angular.module('starter', ['ionic'])
     return obj[status];
   };
 
-  this.changeStatus = function(event, target, status, dom) {
+  this.changeStatus = function(event, target, status) {
     event.preventDefault();
     target.status = status;
+    ['aladin', 'yes24'].forEach(function(item){
+      if(target[item] != null && target[item].available == true) target[item].selectedPrice = target[item][status];
+    });
+  };
+
+
+
+  this.showCalculation = function() {
+    var priceFilter = function(prev, curr) {
+      var next = new Object();
+      var bookstore = ['aladin','yes24','bandi','interpark'];
+      bookstore.forEach(function(item){
+        if(curr[item] != null && curr[item].available == true && curr[item].selectedPrice > 0) {
+          next[item] = prev[item] + curr[item].selectedPrice;
+        } else {
+          next[item] = prev[item];
+        }
+      })
+      return next;
+    };
+
+    var initialObj = { aladin:0, yes24:0, bandi:0, interpark:0 };
+    initialObj = parent.sellBookList.reduce(priceFilter, initialObj);
+    return initialObj;
   };
 
   $ionicModal.fromTemplateUrl('findBookResult.html', {
