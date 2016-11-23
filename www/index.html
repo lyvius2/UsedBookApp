@@ -52,7 +52,7 @@
           <a class="button button-icon icon ion-navicon" ng-click=""></a>
         </ion-header-bar>
       </form>
-      <ion-content>
+      <ion-content class="has-footer">
         <div class="card" ng-repeat="sell in sc.sellBookList" ng-cloak="">
           <div class="item item-thumbnail-left" style="padding-top: 8px; padding-left: 74px; padding-right: 0px; padding-bottom: 8px;">
             <img src="{{sell.image}}" alt="{{sell.title}}" style="max-width: 54px;">
@@ -104,7 +104,7 @@
           </div>
         </div>
       </ion-content>
-      <ion-footer-bar class="bar-stable" style="height: 50px;" ng-if="sc.sellBookList.length > 0">
+      <ion-footer-bar class="bar-stable" ng-if="sc.sellBookList.length > 0">
         <div class="row book_store_price">
           <div class="col col-25 text-center book_store_price">
             <p ng-class="{assertive:totalPriceMax==totalPrice.aladin}">알라딘<br>{{sc.showCalculation('aladin')|currency :'':0}}<span style="color: #009689;">원</span></p>
