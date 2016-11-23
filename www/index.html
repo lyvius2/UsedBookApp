@@ -43,20 +43,16 @@
   <body ng-controller="starterCtrl as sc" ng-cloak="">
 
     <ion-pane>
-      <ion-header-bar class="bar-stable">
-        <button class="button button-icon icon ion-navicon" ng-click="sc.openResultModal()"></button>
-        <h1 class="title">Start!</h1>
-      </ion-header-bar>
+      <form name="findBook" onsubmit="return false;">
+        <ion-header-bar class="bar-stable item-input-inset">
+          <label class="item-input-wrapper">
+            <i class="icon ion-ios-search placeholder-icon"></i>
+            <input type="search" placeholder="Book Title or ISBN" ng-model="sc.searchText">
+          </label>
+          <a class="button button-icon icon ion-navicon" ng-click=""></a>
+        </ion-header-bar>
+      </form>
       <ion-content>
-        <div class="list list-inset">
-          <form name="findBook" onsubmit="return false;">
-            <label class="item item-input">
-              <i class="icon ion-search placeholder-icon"></i>
-              <input type="search" placeholder="Book Title or ISBN" ng-model="sc.searchText">
-            </label>
-          </form>
-        </div>
-
         <div class="card" ng-repeat="sell in sc.sellBookList" ng-cloak="">
           <div class="item item-thumbnail-left" style="padding-top: 8px; padding-left: 74px; padding-right: 0px; padding-bottom: 8px;">
             <img src="{{sell.image}}" alt="{{sell.title}}" style="max-width: 54px;">
@@ -65,18 +61,18 @@
             <p style="position: absolute; top:5px; right:5px;">
               <i class="fa fa-remove"></i>
             </p>
-            <div class="button-bar button-outline bar-energized" style="width: 80%; padding-right: 8px;">
-              <a href="#" data="1" class="button button-small" ng-class="{'button-assertive':sell.status=='bestPrice'}" ng-click="sc.changeStatus($event, sell, 'bestPrice', this)">
+            <div class="button-bar button-outline bar-energized" style="padding-right: 8px;">
+              <a href="#" data="1" class="button button-small" ng-class="{'button-assertive':sell.status=='bestPrice'}" ng-click="sc.changeStatus($event, sell, 'bestPrice')">
                 <i class="fa fa-angle-double-up"></i> 최상
               </a>
-              <a href="#" data="2" class="button button-small" ng-class="{'button-assertive':sell.status=='normalPrice'}" ng-click="sc.changeStatus($event, sell, 'normalPrice', this)">
+              <a href="#" data="2" class="button button-small" ng-class="{'button-assertive':sell.status=='normalPrice'}" ng-click="sc.changeStatus($event, sell, 'normalPrice')">
                 <i class="fa fa-angle-up"></i> 중상
               </a>
-              <a href="#" data="3" class="button button-small" ng-class="{'button-assertive':sell.status=='lowPrice'}" ng-click="sc.changeStatus($event, sell, 'lowPrice', this)">
+              <a href="#" data="3" class="button button-small" ng-class="{'button-assertive':sell.status=='lowPrice'}" ng-click="sc.changeStatus($event, sell, 'lowPrice')">
                 <i class="fa fa-angle-down"></i> 상
               </a>
             </div>
-            </p>
+            <p></p>
             <div class="row">
               <div class="col col-25 text-center" style="padding: 0px;"><img class="book_store_logo" src="./img/aladin_logo.png" alt="알라딘"></div>
               <div class="col col-25 text-center" style="padding: 0px;"><img class="book_store_logo" src="./img/yes24_logo.png" alt="Yes24"></div>
@@ -87,28 +83,46 @@
               <div class="col col-25 text-center book_store_price">
                 <p ng-if="sell.aladin==null" style="color: #69717d;">검색안됨</p>
                 <p ng-if="sell.aladin.available==false" style="color: #ef473a;">매입불가</p>
-                <p ng-if="sell.aladin.available==true">{{sc.getPriceByStatus(sell.aladin, sell.status)|currency :'':0}}<span style="color: #009689;">원</span></p>
+                <p ng-if="sell.aladin.available==true">{{sell.aladin.selectedPrice|currency :'':0}}<span style="color: #009689;">원</span></p>
               </div>
               <div class="col col-25 text-center book_store_price">
                 <p ng-if="sell.yes24==null" style="color: #69717d;">검색안됨</p>
                 <p ng-if="sell.yes24.available==false" style="color: #ef473a;">매입불가</p>
-                <p ng-if="sell.yes24.available==true">{{sc.getPriceByStatus(sell.yes24, sell.status)|currency :'':0}}<span style="color: #009689;">원</span></p>
+                <p ng-if="sell.yes24.available==true">{{sell.yes24.selectedPrice|currency :'':0}}<span style="color: #009689;">원</span></p>
               </div>
               <div class="col col-25 text-center book_store_price">
                 <p ng-if="sell.bandi==null" style="color: #69717d;">검색안됨</p>
                 <p ng-if="sell.bandi.available==false" style="color: #ef473a;">매입불가</p>
-                <p ng-if="sell.bandi.available==true">{{sell.bandi.lowPrice|currency :'':0}}<span style="color: #009689;">원</span></p>
+                <p ng-if="sell.bandi.available==true">{{sell.bandi.bestPrice|currency :'':0}}<span style="color: #009689;">원</span></p>
               </div>
               <div class="col col-25 text-center book_store_price">
                 <p ng-if="sell.interpark==null" style="color: #69717d;">검색안됨</p>
                 <p ng-if="sell.interpark.available==false" style="color: #ef473a;">매입불가</p>
-                <p ng-if="sell.interpark.available==true">{{sell.interpark.lowPrice|currency :'':0}}<span style="color: #009689;">원</span></p>
+                <p ng-if="sell.interpark.available==true">{{sell.interpark.bestPrice|currency :'':0}}<span style="color: #009689;">원</span></p>
               </div>
             </div>
           </div>
         </div>
-
       </ion-content>
+      <ion-footer-bar class="bar-stable" style="height: 50px;" ng-if="sc.sellBookList.length > 0">
+        <div class="row book_store_price">
+          <div class="col col-25 text-center book_store_price">
+            <p ng-class="{assertive:totalPriceMax==totalPrice.aladin}">알라딘<br>{{sc.showCalculation('aladin')|currency :'':0}}<span style="color: #009689;">원</span></p>
+          </div>
+          <div class="col col-25 text-center book_store_price">
+            <p ng-class="{assertive:totalPriceMax==totalPrice.yes24}">Yes24<br>{{sc.showCalculation('yes24')|currency :'':0}}<span style="color: #009689;">원</span></p>
+          </div>
+          <div class="col col-25 text-center book_store_price">
+            <p ng-class="{assertive:totalPriceMax==totalPrice.bandi}">Bandi&Lunis<br>{{sc.showCalculation('bandi')|currency :'':0}}<span style="color: #009689;">원</span></p>
+          </div>
+          <div class="col col-25 text-center book_store_price">
+            <p ng-class="{assertive:totalPriceMax==totalPrice.interpark}">인터파크<br>{{sc.showCalculation('interpark')|currency :'':0}}<span style="color: #009689;">원</span></p>
+          </div>
+        </div>
+        <div class="buttons">
+          <button class="button icon-right ion-chevron-right button-dark"></button>
+        </div>
+      </ion-footer-bar>
     </ion-pane>
 
     <script id="findBookResult.html" type="text/ng-template">

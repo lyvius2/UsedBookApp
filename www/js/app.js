@@ -205,25 +205,22 @@ var app = angular.module('starter', ['ionic'])
     });
   };
 
+  $scope.totalPrice = { aladin:0, yes24:0, bandi:0, interpark:0 };
 
-
-  this.showCalculation = function() {
+  this.showCalculation = function(bookstore) {
     var priceFilter = function(prev, curr) {
-      var next = new Object();
-      var bookstore = ['aladin','yes24','bandi','interpark'];
-      bookstore.forEach(function(item){
-        if(curr[item] != null && curr[item].available == true && curr[item].selectedPrice > 0) {
-          next[item] = prev[item] + curr[item].selectedPrice;
-        } else {
-          next[item] = prev[item];
-        }
-      })
+      var next;
+      if(curr[bookstore] != null && curr[bookstore].available == true && curr[bookstore].selectedPrice > 0) {
+        next = prev + curr[bookstore].selectedPrice;
+      } else {
+        next = prev;
+      }
       return next;
     };
 
-    var initialObj = { aladin:0, yes24:0, bandi:0, interpark:0 };
-    initialObj = parent.sellBookList.reduce(priceFilter, initialObj);
-    return initialObj;
+    $scope.totalPrice[bookstore] = parent.sellBookList.reduce(priceFilter, 0);
+    $scope.totalPriceMax = Math.max($scope.totalPrice.aladin, $scope.totalPrice.yes24, $scope.totalPrice.bandi, $scope.totalPrice.interpark);
+    return $scope.totalPrice[bookstore];
   };
 
   $ionicModal.fromTemplateUrl('findBookResult.html', {
