@@ -147,7 +147,7 @@
     <script id="bookStoreHyperlink.html" type="text/ng-template">
       <div class="buttons">
         <button ng-repeat="bookStore in bookStoreData"
-                ng-click="sc.moveToBookStore(bookStore.uri)"
+                ng-click="sc.moveToBookStore(bookStore)"
                 class="button button-small button-light button-block">
           <img class="book_store_logo" src="./img/{{bookStore.eng}}_logo.png" alt="{{bookStore.kor}}"> {{bookStore.kor}}
           <i class="fa fa-check-circle" ng-if="totalPriceMax == bookStore.totalPrice"></i>

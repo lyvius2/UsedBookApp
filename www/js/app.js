@@ -24,7 +24,7 @@ var app = angular.module('starter', ['ionic'])
   var parent = this;
   var start = 1;
   $scope.bookStoreData = [
-    {kor:'알라딘', eng:'aladin', uri:'http://www.aladin.co.kr/m/c2b/c2b_search.aspx?start=momain'},
+    {kor:'알라딘', eng:'aladin', uri:'http://www.aladin.co.kr/m/c2b/c2b_search.aspx?start=momain&KeyWord='},
     {kor:'YES24', eng:'yes24', uri:'http://m.yes24.com/BuyBack/Search'},
     {kor:'반디앤루니스', eng:'bandi', uri:'http://minibandi.com/m/usedProduct/usedProdSearch.do'},
     {kor:'인터파크', eng:'interpark', uri:'http://bookdb.interpark.com/display/buyGoodsMobile.do?_method=main&bid1=NMB_SNB&bid2=ubook'}
@@ -248,8 +248,15 @@ var app = angular.module('starter', ['ionic'])
     });
   };
 
-  this.moveToBookStore = function(uri) {
-    window.open(uri, '_system', 'location=yes');
+  this.moveToBookStore = function(bookStore) {
+    var isbn = '';
+    parent.sellBookList.some(function(book){
+      if(book.aladin != null && book.aladin.available) {
+        isbn = book.isbn13;
+        return true;
+      }
+    });
+    window.open(bookStore.uri + (bookStore.eng == 'aladin'?isbn:''), '_system', 'location=yes');
     return false;
   };
 
