@@ -211,25 +211,25 @@ var app = angular.module('starter', ['ionic'])
     });
   };
 
-  $scope.totalPrice = { aladin:0, yes24:0, bandi:0, interpark:0 };
-
-  this.showCalculation = function(bookstore) {
+  this.showCalculation = function() {
     var priceFilter = function(prev, curr) {
-      var next;
-      if(curr[bookstore] != null && curr[bookstore].available == true && curr[bookstore].selectedPrice > 0) {
-        next = prev + curr[bookstore].selectedPrice;
-      } else {
-        next = prev;
-      }
+      var next = [];
+      $scope.bookStoreData.forEach(function(item, index) {
+        if(curr[item.eng] != null && curr[item.eng].available == true && curr[item.eng].selectedPrice > 0) {
+          var value = prev[index] + curr[item.eng].selectedPrice;
+          next.push(value);
+          item.totalPrice = value;
+        } else {
+          next.push(prev[index]);
+          item.totalPrice = prev[index];
+        }
+      });
       return next;
     };
 
-    $scope.totalPrice[bookstore] = parent.sellBookList.reduce(priceFilter, 0);
-    $scope.bookStoreData.forEach(function(item){
-      if(item.eng == bookstore) item.totalPrice = $scope.totalPrice[bookstore];
-    });
-    $scope.totalPriceMax = Math.max($scope.totalPrice.aladin, $scope.totalPrice.yes24, $scope.totalPrice.bandi, $scope.totalPrice.interpark);
-    return $scope.totalPrice[bookstore];
+    var totalArray = parent.sellBookList.reduce(priceFilter, [0, 0, 0, 0]);
+    $scope.totalPriceMax = Math.max(totalArray[0], totalArray[1], totalArray[2], totalArray[3]);
+    return $scope.bookStoreData;
   };
 
   this.showHyperlink = function() {

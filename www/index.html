@@ -106,17 +106,8 @@
       </ion-content>
       <ion-footer-bar class="bar-stable" ng-if="sc.sellBookList.length > 0">
         <div class="row book_store_price">
-          <div class="col col-25 text-center book_store_price">
-            <p ng-class="{assertive:totalPriceMax==totalPrice.aladin}">알라딘<br>{{sc.showCalculation('aladin')|currency :'':0}}<span style="color: #009689;">원</span></p>
-          </div>
-          <div class="col col-25 text-center book_store_price">
-            <p ng-class="{assertive:totalPriceMax==totalPrice.yes24}">YES24<br>{{sc.showCalculation('yes24')|currency :'':0}}<span style="color: #009689;">원</span></p>
-          </div>
-          <div class="col col-25 text-center book_store_price">
-            <p ng-class="{assertive:totalPriceMax==totalPrice.bandi}">반디앤루니스<br>{{sc.showCalculation('bandi')|currency :'':0}}<span style="color: #009689;">원</span></p>
-          </div>
-          <div class="col col-25 text-center book_store_price">
-            <p ng-class="{assertive:totalPriceMax==totalPrice.interpark}">인터파크<br>{{sc.showCalculation('interpark')|currency :'':0}}<span style="color: #009689;">원</span></p>
+          <div ng-repeat="total in sc.showCalculation()" class="col col-25 text-center book_store_price">
+            <p ng-class="{assertive:totalPriceMax==total.totalPrice}">{{total.kor}}<br>{{total.totalPrice|currency :'':0}}<span style="color: #009689;">원</span></p>
           </div>
         </div>
         <div class="buttons">
