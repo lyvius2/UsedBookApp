@@ -160,7 +160,6 @@ var app = angular.module('starter', ['ionic'])
       //$http.jsonp('http://localhost:3000/api?callback=JSON_CALLBACK', {params:{keyword:searchText,start:start}})
       $http.jsonp(uri, {params:{keyword:searchText,start:start}})
         .then(function(result){
-          console.log(result.data);
           return callback(null, result.data);
         }, function(error){
           $ionicLoading.hide();

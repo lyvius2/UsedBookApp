@@ -80,25 +80,10 @@
               <div class="col col-25 text-center" style="padding: 0px;"><img class="book_store_logo" src="./img/interpark_logo.png" alt="인터파크"></div>
             </div>
             <div class="row book_store_price">
-              <div class="col col-25 text-center book_store_price">
-                <p ng-if="sell.aladin==null" style="color: #69717d;">검색안됨</p>
-                <p ng-if="sell.aladin.available==false" style="color: #ef473a;">매입불가</p>
-                <p ng-if="sell.aladin.available==true">{{sell.aladin.selectedPrice|currency :'':0}}<span style="color: #009689;">원</span></p>
-              </div>
-              <div class="col col-25 text-center book_store_price">
-                <p ng-if="sell.yes24==null" style="color: #69717d;">검색안됨</p>
-                <p ng-if="sell.yes24.available==false" style="color: #ef473a;">매입불가</p>
-                <p ng-if="sell.yes24.available==true">{{sell.yes24.selectedPrice|currency :'':0}}<span style="color: #009689;">원</span></p>
-              </div>
-              <div class="col col-25 text-center book_store_price">
-                <p ng-if="sell.bandi==null" style="color: #69717d;">검색안됨</p>
-                <p ng-if="sell.bandi.available==false" style="color: #ef473a;">매입불가</p>
-                <p ng-if="sell.bandi.available==true">{{sell.bandi.bestPrice|currency :'':0}}<span style="color: #009689;">원</span></p>
-              </div>
-              <div class="col col-25 text-center book_store_price">
-                <p ng-if="sell.interpark==null" style="color: #69717d;">검색안됨</p>
-                <p ng-if="sell.interpark.available==false" style="color: #ef473a;">매입불가</p>
-                <p ng-if="sell.interpark.available==true">{{sell.interpark.bestPrice|currency :'':0}}<span style="color: #009689;">원</span></p>
+              <div ng-repeat="books in bookStoreData" class="col col-25 text-center book_store_price">
+                <p ng-if="sell[books.eng]==null" style="color: #69717d;">검색안됨</p>
+                <p ng-if="sell[books.eng].available==false" style="color: #ef473a;">매입불가</p>
+                <p ng-if="sell[books.eng].available==true">{{sell[books.eng].selectedPrice|currency :'':0}}<span style="color: #009689;">원</span></p>
               </div>
             </div>
           </div>
