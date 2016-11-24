@@ -21,7 +21,7 @@
     <link href="css/style.css" rel="stylesheet">
 
     <style>
-      .book_store_logo { max-width: 45px; }
+      .book_store_logo { max-width: 45px; vertical-align:middle; }
       .book_store_price { padding: 0px; margin: 0px; }
       .book_store_price p { font-size: 12px; font-weight: bold; }
     </style>
@@ -57,8 +57,8 @@
           <div class="item item-thumbnail-left" style="padding-top: 8px; padding-left: 74px; padding-right: 0px; padding-bottom: 8px;">
             <img src="{{sell.image}}" alt="{{sell.title}}" style="max-width: 54px;">
             <h2 ng-bind="sell.title" style="margin-right: 8px;"></h2>
-            <p ng-bind="'ISBN: ' + sell.isbn"></p>
-            <p style="position: absolute; top:5px; right:5px;">
+            <p ng-bind="'ISBN:' + sell.isbn"></p>
+            <p ng-click="sc.removeBook($index)" style="position: absolute; top:5px; right:5px;">
               <i class="fa fa-remove"></i>
             </p>
             <div class="button-bar button-outline bar-energized" style="padding-right: 8px;">
@@ -110,7 +110,7 @@
             <p ng-class="{assertive:totalPriceMax==totalPrice.aladin}">알라딘<br>{{sc.showCalculation('aladin')|currency :'':0}}<span style="color: #009689;">원</span></p>
           </div>
           <div class="col col-25 text-center book_store_price">
-            <p ng-class="{assertive:totalPriceMax==totalPrice.yes24}">Yes24<br>{{sc.showCalculation('yes24')|currency :'':0}}<span style="color: #009689;">원</span></p>
+            <p ng-class="{assertive:totalPriceMax==totalPrice.yes24}">YES24<br>{{sc.showCalculation('yes24')|currency :'':0}}<span style="color: #009689;">원</span></p>
           </div>
           <div class="col col-25 text-center book_store_price">
             <p ng-class="{assertive:totalPriceMax==totalPrice.bandi}">반디앤루니스<br>{{sc.showCalculation('bandi')|currency :'':0}}<span style="color: #009689;">원</span></p>
@@ -120,7 +120,7 @@
           </div>
         </div>
         <div class="buttons">
-          <button class="button icon-right ion-chevron-right button-dark"></button>
+          <button class="button icon-right ion-chevron-right button-dark" ng-click="sc.showHyperlink()"></button>
         </div>
       </ion-footer-bar>
     </ion-pane>
@@ -143,6 +143,16 @@
           </div>
         </ion-content>
       </ion-modal-view>
+    </script>
+    <script id="bookStoreHyperlink.html" type="text/ng-template">
+      <div class="buttons">
+        <button ng-repeat="bookStore in bookStoreData"
+                ng-click="sc.moveToBookStore(bookStore.uri)"
+                class="button button-small button-light button-block">
+          <img class="book_store_logo" src="./img/{{bookStore.eng}}_logo.png" alt="{{bookStore.kor}}"> {{bookStore.kor}}
+          <i class="fa fa-check-circle" ng-if="totalPriceMax == bookStore.totalPrice"></i>
+        </button>
+      </div>
     </script>
     <script src="js/app.js"></script>
   </body>

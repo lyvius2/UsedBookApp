@@ -23,6 +23,12 @@ var app = angular.module('starter', ['ionic'])
 }).controller('starterCtrl', function($scope, $http, $q, $ionicModal, $timeout, $ionicLoading, $ionicScrollDelegate, $ionicPopup, $ionicActionSheet, $ionicPopover){
   var parent = this;
   var start = 1;
+  $scope.bookStoreData = [
+    {kor:'알라딘', eng:'aladin', uri:'http://www.aladin.co.kr/m/c2b/c2b_search.aspx?start=momain'},
+    {kor:'YES24', eng:'yes24', uri:'http://m.yes24.com/BuyBack/Search'},
+    {kor:'반디앤루니스', eng:'bandi', uri:'http://minibandi.com/m/usedProduct/usedProdSearch.do'},
+    {kor:'인터파크', eng:'interpark', uri:'http://bookdb.interpark.com/display/buyGoodsMobile.do?_method=main&bid1=NMB_SNB&bid2=ubook'}
+  ];
 
   var showAlert = function(title, msg, callback) {
     var alertPopup = $ionicPopup.alert({
@@ -193,8 +199,8 @@ var app = angular.module('starter', ['ionic'])
     }, 5000);
   };
 
-  this.getPriceByStatus = function(obj, status) {
-    return obj[status];
+  this.removeBook = function(index) {
+    parent.sellBookList.splice(index, 1);
   };
 
   this.changeStatus = function(event, target, status) {
@@ -219,8 +225,32 @@ var app = angular.module('starter', ['ionic'])
     };
 
     $scope.totalPrice[bookstore] = parent.sellBookList.reduce(priceFilter, 0);
+    $scope.bookStoreData.forEach(function(item){
+      if(item.eng == bookstore) item.totalPrice = $scope.totalPrice[bookstore];
+    });
     $scope.totalPriceMax = Math.max($scope.totalPrice.aladin, $scope.totalPrice.yes24, $scope.totalPrice.bandi, $scope.totalPrice.interpark);
     return $scope.totalPrice[bookstore];
+  };
+
+  this.showHyperlink = function() {
+    var linkPopup = $ionicPopup.show({
+      templateUrl:'bookStoreHyperlink.html',
+      title:'서점 웹사이트로 이동',
+      subTitle:'어디로 팔러 가실래요? <i class="fa fa-check-circle"></i> : 최고가',
+      scope:$scope,
+      buttons:[
+        {text:'취소', type:'button-assertive'}
+      ]
+    });
+
+    linkPopup.then(function(res) {
+      console.log('Tapped!', res);
+    });
+  };
+
+  this.moveToBookStore = function(uri) {
+    window.open(uri, '_system', 'location=yes');
+    return false;
   };
 
   $ionicModal.fromTemplateUrl('findBookResult.html', {
