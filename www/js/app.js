@@ -3,10 +3,10 @@
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
-var app = angular.module('starter', ['ionic'])
+var app = angular.module('starter', ['ionic', 'ngRoute'])
 .run(function($ionicPlatform) {
-  $ionicPlatform.ready(function() {
-    if(window.cordova && window.cordova.plugins.Keyboard) {
+  $ionicPlatform.ready(function () {
+    if (window.cordova && window.cordova.plugins.Keyboard) {
       // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
       // for form inputs)
       cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
@@ -16,18 +16,40 @@ var app = angular.module('starter', ['ionic'])
       // a much nicer keyboard experience.
       cordova.plugins.Keyboard.disableScroll(true);
     }
-    if(window.StatusBar) {
+    if (window.StatusBar) {
       StatusBar.styleDefault();
     }
   });
-}).controller('starterCtrl', function($scope, $http, $q, $ionicModal, $timeout, $ionicLoading, $ionicScrollDelegate, $ionicPopup, $ionicActionSheet, $ionicPopover){
+}).config(function($routeProvider){
+  $routeProvider
+    .when('/buy', {
+      templateUrl: 'ng-template/buyBook.html'
+    })
+    .when('/sell',{
+      templateUrl: 'ng-template/sellBook.html'
+    })
+    .otherwise({
+      redirectTo: '/buy'
+    });
+}).controller('starterCtrl', function($scope, $http, $q, $location, $ionicModal, $timeout, $ionicLoading, $ionicScrollDelegate, $ionicPopup, $ionicActionSheet, $ionicSideMenuDelegate){
   var parent = this;
   var start = 1;
-  $scope.bookStoreData = [
+
+  $scope.bookBuyerStoreData = [
     {kor:'알라딘', eng:'aladin', uri:'http://www.aladin.co.kr/m/c2b/c2b_search.aspx?start=momain&KeyWord='},
     {kor:'YES24', eng:'yes24', uri:'http://m.yes24.com/BuyBack/Search'},
     {kor:'반디앤루니스', eng:'bandi', uri:'http://minibandi.com/m/usedProduct/usedProdSearch.do'},
     {kor:'인터파크', eng:'interpark', uri:'http://bookdb.interpark.com/display/buyGoodsMobile.do?_method=main&bid1=NMB_SNB&bid2=ubook'}
+  ];
+
+  var bookSellerStoreData = [
+    {code:'kb',name:'교보문고'},
+    {code:'y1',name:'영록서점'},
+    {code:'y2',name:'YES24'},
+    {code:'bk',name:'북코아'},
+    {code:'sg',name:'신고로'},
+    {code:'gb',name:'좋은책많은데'},
+    {code:'ip',name:'인터파크'}
   ];
 
   var showAlert = function(title, msg, callback) {
@@ -151,8 +173,48 @@ var app = angular.module('starter', ['ionic'])
     });
   };
 
+  var searchAction = function(pageNo, seller, searchText) {
+    var uri = 'https://usedbookserver.herokuapp.com/buy?callback=JSON_CALLBACK';
+    $http.jsonp(uri, {params:{keyword:searchText,flatform:seller.code,pageNo:pageNo}}).then(function(result) {
+      if(pageNo == 1) {
+        seller.rowOfNum = result.data.data.length;
+        $scope.sellerList.push(angular.extend(seller, result.data));
+        $ionicLoading.hide();
+      } else {
+        seller.data = seller.data.concat(result.data.data);
+        if(result.data.data.length < seller.rowOfNum) {
+          seller.paging = false;
+        }
+        if(result.data.data.length == 0) {
+          showAlert('검색 결과가 없습니다.', seller.name + '에서는 책이 더 이상 없습니다.', function(){
+            seller.page--;
+          });
+        }
+        console.log(result.data.data.length, seller.rowOfNum, seller.paging);
+        $ionicLoading.hide();
+      }
+    });
+    console.log($scope.sellerList);
+    return;
+  };
+
   this.findBookList = null;
   this.sellBookList = new Array();
+
+  this.search = function(pageNo, sellerList, searchText) {
+    loading('Searching for Used Book', null, function() {
+      angular.forEach(sellerList, function(item) {
+        searchAction(pageNo, item, searchText);
+      });
+    });
+  };
+
+  this.addSearch = function(seller) {
+    seller.page++;
+    loading('Searching for Used Book in ' + seller.name, null, function() {
+      searchAction(seller.page, seller, seller.keyword);
+    });
+  };
 
   this.find = function(searchText, callback) {
     loading('Searching for a Book', null, function(){
@@ -177,7 +239,8 @@ var app = angular.module('starter', ['ionic'])
     $scope.modal.hide();
   };
 
-  this.selectBook = function(obj){
+  this.selectBook = function(event, obj){
+    event.preventDefault();
     var hideSheet = $ionicActionSheet.show({
       buttons: [
         {text: '매입가 검색'}
@@ -213,7 +276,7 @@ var app = angular.module('starter', ['ionic'])
   this.showCalculation = function() {
     var priceFilter = function(prev, curr) {
       var next = [];
-      $scope.bookStoreData.forEach(function(item, index) {
+      $scope.bookBuyerStoreData.forEach(function(item, index) {
         if(curr[item.eng] != null && curr[item.eng].available == true && curr[item.eng].selectedPrice > 0) {
           var value = prev[index] + curr[item.eng].selectedPrice;
           next.push(value);
@@ -228,7 +291,7 @@ var app = angular.module('starter', ['ionic'])
 
     var totalArray = parent.sellBookList.reduce(priceFilter, [0, 0, 0, 0]);
     $scope.totalPriceMax = Math.max(totalArray[0], totalArray[1], totalArray[2], totalArray[3]);
-    return $scope.bookStoreData;
+    return $scope.bookBuyerStoreData;
   };
 
   this.showHyperlink = function() {
@@ -245,6 +308,11 @@ var app = angular.module('starter', ['ionic'])
     linkPopup.then(function(res) {
       console.log('Tapped!', res);
     });
+  };
+
+  this.moveToSellerPage = function(event, uri) {
+    event.preventDefault();
+    window.open(uri, '_system', 'location=yes');
   };
 
   this.moveToBookStore = function(bookStore) {
@@ -274,9 +342,37 @@ var app = angular.module('starter', ['ionic'])
     angular.element('#findBookLayer').off('scroll');
   });
 
+  $scope.$watch(function(){ return $location.path() }, function(params){
+    if(params == '/buy') {
+      angular.element('ion-footer-bar').hide();
+      angular.element('ion-content').removeClass('has-footer');
+    } else {
+      angular.element('ion-footer-bar').show();
+      angular.element('ion-content').addClass('has-footer');
+    }
+  });
+
+  $scope.openSideMenu = function() {
+    $ionicSideMenuDelegate.toggleRight();
+  };
+
   angular.element(document.forms[0]).on('submit', function(e){
     e.preventDefault();
     document.activeElement.blur();
-    parent.find(parent.searchText, findSuccessHandler);
+    switch($location.path()) {
+      case '/sell' :
+        parent.find(parent.searchText, findSuccessHandler);
+        break;
+      case '/buy' :
+        $scope.sellerList = [];
+        $ionicScrollDelegate.$getByHandle('usedBookListScroll').scrollTop();
+        parent.search(1, bookSellerStoreData, parent.searchText);
+        break;
+    }
+  });
+
+  angular.element(document).on('click', 'div.list div.item.item-divider', function(e) {
+    e.preventDefault();
+    angular.element(this).parent().find('div#bookDetail').slideToggle('slow');
   });
 });
