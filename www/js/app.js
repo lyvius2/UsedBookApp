@@ -3,7 +3,7 @@
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
-var app = angular.module('starter', ['ionic', 'ngRoute'])
+var app = angular.module('starter', ['ionic', 'ngRoute', 'ngMaterial'])
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function () {
     if (window.cordova && window.cordova.plugins.Keyboard) {
@@ -27,11 +27,22 @@ var app = angular.module('starter', ['ionic', 'ngRoute'])
     })
     .when('/sell',{
       templateUrl: 'ng-template/sellBook.html'
-    })
-    .otherwise({
-      redirectTo: '/buy'
+    //})
+    //.otherwise({
+    //  redirectTo: '/buy'
     });
-}).controller('starterCtrl', function($scope, $http, $q, $location, $ionicModal, $timeout, $ionicLoading, $ionicScrollDelegate, $ionicPopup, $ionicActionSheet, $ionicSideMenuDelegate){
+}).directive('ngEnter', function(){
+    return function($scope,element,attrs){
+      element.bind('keydown keypress',function(event) {
+        if(event.which===13) {
+          $scope.$apply(function() {
+            $scope.$eval(attrs.ngEnter);
+          });
+          event.preventDefault();
+        }
+      });
+    };
+}).controller('starterCtrl', function($scope, $http, $q, $location, $ionicModal, $timeout, $window, $ionicLoading, $ionicScrollDelegate, $ionicPopup, $ionicActionSheet, $ionicSideMenuDelegate){
   var parent = this;
   var start = 1;
 
@@ -176,10 +187,12 @@ var app = angular.module('starter', ['ionic', 'ngRoute'])
   var searchAction = function(pageNo, seller, searchText) {
     var uri = 'https://usedbookserver.herokuapp.com/buy?callback=JSON_CALLBACK';
     $http.jsonp(uri, {params:{keyword:searchText,flatform:seller.code,pageNo:pageNo}}).then(function(result) {
+      parent.loop--;
       if(pageNo == 1) {
         seller.rowOfNum = result.data.data.length;
-        $scope.sellerList.push(angular.extend(seller, result.data));
-        $ionicLoading.hide();
+        if(result.data.data.length > 0) {
+          $scope.sellerList.push(angular.extend(seller, result.data));
+        }
       } else {
         seller.data = seller.data.concat(result.data.data);
         if(result.data.data.length < seller.rowOfNum) {
@@ -190,18 +203,22 @@ var app = angular.module('starter', ['ionic', 'ngRoute'])
             seller.page--;
           });
         }
-        console.log(result.data.data.length, seller.rowOfNum, seller.paging);
-        $ionicLoading.hide();
       }
+      if(parent.loop == 0) $ionicLoading.hide();
+    }, function(error) {
+      parent.loop--;
+      if(parent.loop == 0) $ionicLoading.hide();
+      console.log(error);
     });
-    console.log($scope.sellerList);
     return;
   };
 
   this.findBookList = null;
   this.sellBookList = new Array();
+  this.loop;
 
   this.search = function(pageNo, sellerList, searchText) {
+    parent.loop = sellerList.length;
     loading('Searching for Used Book', null, function() {
       angular.forEach(sellerList, function(item) {
         searchAction(pageNo, item, searchText);
@@ -211,6 +228,7 @@ var app = angular.module('starter', ['ionic', 'ngRoute'])
 
   this.addSearch = function(seller) {
     seller.page++;
+    parent.loop = 1;
     loading('Searching for Used Book in ' + seller.name, null, function() {
       searchAction(seller.page, seller, seller.keyword);
     });
@@ -344,9 +362,12 @@ var app = angular.module('starter', ['ionic', 'ngRoute'])
 
   $scope.$watch(function(){ return $location.path() }, function(params){
     if(params == '/buy') {
+      angular.element('input[type=search]').attr('placeholder', '중고책 구매가 검색 : Book Title');
       angular.element('ion-footer-bar').hide();
       angular.element('ion-content').removeClass('has-footer');
     } else {
+      $ionicScrollDelegate.$getByHandle('usedBookListScroll').scrollTop();
+      angular.element('input[type=search]').attr('placeholder', '중고책 매입가 검색 : Book Title or ISBN');
       angular.element('ion-footer-bar').show();
       angular.element('ion-content').addClass('has-footer');
     }
@@ -356,9 +377,27 @@ var app = angular.module('starter', ['ionic', 'ngRoute'])
     $ionicSideMenuDelegate.toggleRight();
   };
 
-  angular.element(document.forms[0]).on('submit', function(e){
-    e.preventDefault();
+  $scope.startUp = function() {
+    var initPopup = $ionicPopup.show({
+      templateUrl:'startUp.html',
+      title:'헌책방!',
+      subTitle:'메뉴를 선택해주세요',
+      scope:$scope
+    });
+
+    initPopup.then(function(res) {
+      console.log('Tapped!', res);
+    });
+
+    angular.element(document).on('click', '#startUp > button', function() {
+      initPopup.close();
+    });
+  };
+
+  $scope.insert = function() {
     document.activeElement.blur();
+    angular.element('md-input-container').hide();
+    angular.element('form#findBook').show();
     switch($location.path()) {
       case '/sell' :
         parent.find(parent.searchText, findSuccessHandler);
@@ -369,10 +408,36 @@ var app = angular.module('starter', ['ionic', 'ngRoute'])
         parent.search(1, bookSellerStoreData, parent.searchText);
         break;
     }
+  };
+
+  $scope.validateSearchInput = function() {
+    switch($location.path()) {
+      case '/sell' :
+        return (parent.sellBookList != null && parent.sellBookList.length > 0)?false:true;
+      case '/buy' :
+        return ($scope.sellerList != null && $scope.sellerList.length > 0)?false:true;
+      default :
+        return false;
+    }
+  };
+
+  angular.element(document.forms[0]).on('submit', function(e){
+    e.preventDefault();
+    $scope.insert();
   });
 
   angular.element(document).on('click', 'div.list div.item.item-divider', function(e) {
     e.preventDefault();
-    angular.element(this).parent().find('div#bookDetail').slideToggle('slow');
+    angular.element(this).parent().find('div[id^=bookDetail]').slideToggle('slow', function() {
+      var down = angular.element(this).parent().find('i.fa.fa-chevron-down');
+      var up = angular.element(this).parent().find('i.fa.fa-chevron-up');
+      if(angular.element(this)[0].style.display=='none') {
+        down.show(); up.hide();
+      } else {
+        down.hide(); up.show();
+      }
+    });
   });
+
+  $scope.startUp();
 });

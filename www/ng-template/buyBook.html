@@ -1,7 +1,14 @@
 <div class="list" ng-cloak="">
-  <div ng-repeat="bookSeller in sellerList" ng-show="bookSeller.data.length > 0">
-    <div class="item item-divider" ng-bind="bookSeller.name" ></div>
-    <div id="bookDetail">
+  <div ng-repeat="bookSeller in sellerList">
+    <div class="item item-divider">
+      {{bookSeller.name}}
+      <p style="position: absolute; top: 8px; right: 8px;">
+        <!--<i class="fa fa-circle-o-notch fa-spin fa-fw" ng-if="bookSeller.data == null"></i>-->
+        <i class="fa fa-chevron-down" aria-hidden="true"></i>
+        <i class="fa fa-chevron-up" aria-hidden="true" style="display: none;"></i>
+      </p>
+    </div>
+    <div id="bookDetail_{{bookSeller.code}}" style="display:none;">
       <a ng-repeat="book in bookSeller.data" ng-click="sc.moveToSellerPage($event, book.uri)" href="#" class="item item-thumbnail-left" style="padding-top: 8px; padding-left: 74px; padding-right: 0px; padding-bottom: 8px;">
         <img src="{{book.img}}" style="width: 57px;">
         <h2 ng-bind="book.title"></h2>
@@ -12,16 +19,4 @@
       <div class="item light-bg text-center" style="padding: 8px;" ng-if="bookSeller.paging == true" ng-click="sc.addSearch(bookSeller)">추가 검색 <i class="fa fa-angle-double-down positive"></i></div>
     </div>
   </div>
-  <!--
-  <div>
-    <div class="item item-divider">북코아</div>
-    <a href="#" class="item item-thumbnail-left" style="padding-top: 8px; padding-left: 74px; padding-right: 0px; padding-bottom: 8px;">
-      <img src="http://image.kyobobook.co.kr/images/book/large/000/l9788995869000.jpg" style="width: 57px;">
-      <h2>일본의 21세기 비전</h2>
-      <p>한국일본학회 40주년 특별위원회 | 보고사</p>
-      <p>DC Virus (2013년 01월)</p>
-      <p>12,000원 → <strong style="color: #ef473a;">2,700원</strong></p>
-    </a>
-  </div>
-  -->
 </div>

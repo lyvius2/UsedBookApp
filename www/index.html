@@ -18,6 +18,7 @@
 
     <link href="lib/ionic/css/ionic.css" rel="stylesheet">
     <link href="css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/angular-material.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
 
     <style>
@@ -43,7 +44,7 @@
   <body ng-controller="starterCtrl as sc" ng-cloak="">
 
     <ion-pane>
-      <form name="findBook" onsubmit="return false;">
+      <form id="findBook" name="findBook" onsubmit="return false;" style="display:none;">
         <ion-header-bar class="bar-stable item-input-inset">
           <label class="item-input-wrapper">
             <i class="icon ion-ios-search placeholder-icon"></i>
@@ -54,21 +55,25 @@
       </form>
 
       <ion-side-menus>
-        <ion-side-menu-content>
+        <ion-side-menu-content style="background: url(./img/books-484766_1920.jpg) center; background-size: cover;">
           <ion-content class="has-footer" delegate-handle="usedBookListScroll">
+            <md-input-container class="md-block padding-vertical" style="top: 190px; margin: 20px;" ng-show="validateSearchInput()">
+              <label><i class="icon ion-search placeholder-icon"></i>책 검색어</label>
+              <input ng-model="sc.searchText" ng-enter="insert()">
+            </md-input-container>
             <div ng-view=""></div>
           </ion-content>
         </ion-side-menu-content>
 
         <ion-side-menu side="right" width="230">
           <ion-content class="has-footer">
-            <a menu-close="" href="#buy" class="item item-divider"><i class="fa fa-book positive"></i> <i class="fa fa-arrow-circle-left positive"></i> 중고책 구매가 검색</a>
-            <a menu-close="" href="#sell" class="item item-divider"><i class="fa fa-book assertive"></i> <i class="fa fa-arrow-circle-right assertive"></i> 중고책 매입가 검색</a>
+            <a menu-close="" href="#buy" class="item item-divider item-light"><i class="fa fa-book positive"></i> <i class="fa fa-arrow-circle-left positive"></i> 중고책 구매가 검색</a>
+            <a menu-close="" href="#sell" class="item item-divider item-light"><i class="fa fa-book assertive"></i> <i class="fa fa-arrow-circle-right assertive"></i> 중고책 매입가 검색</a>
           </ion-content>
         </ion-side-menu>
       </ion-side-menus>
 
-      <ion-footer-bar class="bar-stable" ng-if="sc.sellBookList.length > 0">
+      <ion-footer-bar class="bar-stable" ng-if="sc.sellBookList != null && sc.sellBookList.length > 0">
         <div class="row book_store_price">
           <div ng-repeat="total in sc.showCalculation()" class="col col-25 text-center book_store_price">
             <p ng-class="{assertive:totalPriceMax==total.totalPrice}">{{total.kor}}<br>{{total.totalPrice|currency :'':0}}<span style="color: #009689;">원</span></p>
@@ -100,12 +105,22 @@
       </ion-modal-view>
     </script>
     <script id="bookStoreHyperlink.html" type="text/ng-template">
-      <div class="buttons">
+      <div id="bookStoreHyperlink" class="buttons">
         <button ng-repeat="bookStore in bookBuyerStoreData"
                 ng-click="sc.moveToBookStore(bookStore)"
                 class="button button-small button-light button-block">
           <img class="book_store_logo" src="./img/{{bookStore.eng}}_logo.png" alt="{{bookStore.kor}}"> {{bookStore.kor}}
           <i class="fa fa-check-circle" ng-if="totalPriceMax == bookStore.totalPrice"></i>
+        </button>
+      </div>
+    </script>
+    <script id="startUp.html" type="text/ng-template">
+      <div id="startUp" class="buttons">
+        <button onclick="location.href='#buy'" class="button button-small button-light button-block">
+          <i class="fa fa-book positive"></i> <i class="fa fa-arrow-circle-left positive"></i> 중고책 구매가 검색
+        </button>
+        <button onclick="location.href='#sell'" class="button button-small button-light button-block">
+          <i class="fa fa-book assertive"></i> <i class="fa fa-arrow-circle-right assertive"></i> 중고책 매입가 검색
         </button>
       </div>
     </script>
