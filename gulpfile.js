@@ -56,6 +56,9 @@ gulp.task('library-build', function(){
   var jsList = new Array();
   jsList.push(path+'/validator/validator.js');
   jsList.push(path+'/angular-route/angular-route.js');
+  jsList.push(path+'/angular-aria/angular-aria.js');
+  jsList.push(path+'/angular-messages/angular-messages.js');
+  jsList.push(path+'/angular-material/angular-material.js');
   return gulp.src(jsList)
     .pipe(concat('libs.js'))
     .pipe(uglify())
