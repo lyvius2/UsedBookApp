@@ -3,7 +3,7 @@
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
-var app = angular.module('starter', ['ionic', 'ngRoute', 'ngMaterial'])
+var app = angular.module('starter', ['ionic', 'ngRoute', 'ngMaterial', 'ngSanitize'])
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function () {
     if (window.cordova && window.cordova.plugins.Keyboard) {
@@ -27,9 +27,6 @@ var app = angular.module('starter', ['ionic', 'ngRoute', 'ngMaterial'])
     })
     .when('/sell',{
       templateUrl: 'ng-template/sellBook.html'
-    //})
-    //.otherwise({
-    //  redirectTo: '/buy'
     });
 }).directive('ngEnter', function(){
     return function($scope,element,attrs){
@@ -42,7 +39,7 @@ var app = angular.module('starter', ['ionic', 'ngRoute', 'ngMaterial'])
         }
       });
     };
-}).controller('starterCtrl', function($scope, $http, $q, $location, $ionicModal, $timeout, $window, $ionicLoading, $ionicScrollDelegate, $ionicPopup, $ionicActionSheet, $ionicSideMenuDelegate){
+}).controller('starterCtrl', function($scope, $http, $q, $location, $ionicModal, $timeout, $filter, $window, $ionicLoading, $ionicScrollDelegate, $ionicPopup, $ionicActionSheet, $ionicSideMenuDelegate){
   var parent = this;
   var start = 1;
 
@@ -54,6 +51,7 @@ var app = angular.module('starter', ['ionic', 'ngRoute', 'ngMaterial'])
   ];
 
   var bookSellerStoreData = [
+    {code:'bl',name:'반디앤루니스'},
     {code:'kb',name:'교보문고'},
     {code:'y1',name:'영록서점'},
     {code:'y2',name:'YES24'},
@@ -71,6 +69,19 @@ var app = angular.module('starter', ['ionic', 'ngRoute', 'ngMaterial'])
 
     alertPopup.then(function(res) {
       return callback(res);
+    });
+  };
+
+  var showConfirm = function(title, msg, callback) {
+    var confirmPopup = $ionicPopup.confirm({
+      title: title,
+      template: msg
+    });
+
+    confirmPopup.then(function(res) {
+      if(res) {
+        return callback();
+      }
     });
   };
 
@@ -131,7 +142,7 @@ var app = angular.module('starter', ['ionic', 'ngRoute', 'ngMaterial'])
         }
         if(parent.findBookList.rss.channel.item.length < parent.findBookList.rss.channel.total) start = data.rss.channel.start + data.rss.channel.display;
       } else {
-        showAlert('검색 결과가 없습니다.', '다시 검색해주십시오.', function(res){
+        showAlert('검색 결과가 없습니다.', '다시 검색해주십시오.', function(){
           parent.closeResultModal();
         });
       }
@@ -185,9 +196,18 @@ var app = angular.module('starter', ['ionic', 'ngRoute', 'ngMaterial'])
   };
 
   var searchAction = function(pageNo, seller, searchText) {
-    var uri = 'https://usedbookserver.herokuapp.com/buy?callback=JSON_CALLBACK';
-    $http.jsonp(uri, {params:{keyword:searchText,flatform:seller.code,pageNo:pageNo}}).then(function(result) {
+    var common = function() {
       parent.loop--;
+      if(parent.loop == 0) {
+        $ionicLoading.hide();
+        if ($scope.sellerList.length == 0) {
+          showAlert('검색 결과가 없습니다.', '"' + parent.searchText + '" 검색어로 찾을 수 있는 책이 없습니다.', function () {
+          });
+        }
+      }
+    };
+
+    var searchSuccessHandler = function(result) {
       if(pageNo == 1) {
         seller.rowOfNum = result.data.data.length;
         if(result.data.data.length > 0) {
@@ -199,17 +219,48 @@ var app = angular.module('starter', ['ionic', 'ngRoute', 'ngMaterial'])
           seller.paging = false;
         }
         if(result.data.data.length == 0) {
-          showAlert('검색 결과가 없습니다.', seller.name + '에서는 책이 더 이상 없습니다.', function(){
+          showAlert('검색 결과가 없습니다.', seller.name + '에서는 책이 더 이상 없습니다.', function() {
             seller.page--;
           });
         }
       }
-      if(parent.loop == 0) $ionicLoading.hide();
-    }, function(error) {
-      parent.loop--;
-      if(parent.loop == 0) $ionicLoading.hide();
-      console.log(error);
-    });
+      common();
+    };
+
+    if(seller.code == 'bl') {
+      var getBuyPriceBandi = $http.jsonp('http://222.122.120.242:7570/ksf/api/search?sn=product&s=&l=40&pt=05&callback=JSON_CALLBACK', {params:{q:searchText,o:(pageNo-1)}});
+      getBuyPriceBandi.then(function(result) {
+        var bandiData = {
+          page: pageNo,
+          paging: true,
+          keyword: searchText
+        };
+        bandiData.data = result.data.result.map(function(item) {
+          var obj = {};
+          obj.img = 'http://image.bandinlunis.com/upload' + item.prod_img;
+          obj.uri = 'http://minibandi.com/m/product/detailProduct.do?prodId=' + item.prod_id;
+          obj.title = item.prod_name;
+          obj.author = item.author;
+          obj.publisher = item.maker;
+          obj.originalprice = $filter('currency')(item.price1, '', 0) + '원';
+          obj.sellprice = $filter('currency')(item.price2, '', 0) + '원';
+          obj.release = item.pdate.substring(0,4) + '.' + item.pdate.substring(4,6) + '.' + item.pdate.substring(6);
+          return obj;
+        });
+        searchSuccessHandler({data: bandiData});
+      }, function(error) {
+        console.log(error);
+        common();
+      });
+    } else {
+      var uri = 'https://usedbookserver.herokuapp.com/buy?callback=JSON_CALLBACK';
+      $http.jsonp(uri, {params:{keyword:searchText,flatform:seller.code,pageNo:pageNo}}).then(function(result) {
+        searchSuccessHandler(result);
+      }, function(error) {
+        console.log(error);
+        common();
+      });
+    }
     return;
   };
 
@@ -361,16 +412,31 @@ var app = angular.module('starter', ['ionic', 'ngRoute', 'ngMaterial'])
   });
 
   $scope.$watch(function(){ return $location.path() }, function(params){
-    if(params == '/buy') {
-      angular.element('input[type=search]').attr('placeholder', '중고책 구매가 검색 : Book Title');
-      angular.element('ion-footer-bar').hide();
-      angular.element('ion-content').removeClass('has-footer');
-    } else {
-      $ionicScrollDelegate.$getByHandle('usedBookListScroll').scrollTop();
-      angular.element('input[type=search]').attr('placeholder', '중고책 매입가 검색 : Book Title or ISBN');
-      angular.element('ion-footer-bar').show();
-      angular.element('ion-content').addClass('has-footer');
+    var section, placeholderText, isListOpen;
+    switch(params) {
+      case '/buy' :
+        section = '중고책 구매가 검색';
+        placeholderText = section + ' : Book Title';
+        isListOpen = (parent.searchText != null && parent.searchText != '' && ($scope.sellerList == null || $scope.sellerList.length < 1))?false:true;
+        angular.element('ion-footer-bar').hide();
+        angular.element('ion-content').removeClass('has-footer');
+        break;
+      case '/sell' :
+        $ionicScrollDelegate.$getByHandle('usedBookListScroll').scrollTop();
+        section = '중고책 매입가 검색';
+        placeholderText = section + ' : Book Title or ISBN';
+        isListOpen = (parent.searchText != null && parent.searchText != '' && (parent.sellBookList == null || parent.sellBookList.length < 1))?false:true;
+        angular.element('ion-footer-bar').show();
+        angular.element('ion-content').addClass('has-footer');
+        break;
     }
+    angular.element('input[type=search]').attr('placeholder', placeholderText);
+    if(params != '' && !isListOpen) {
+      showConfirm(section, '"' + parent.searchText + '" 로 검색하시겠습니까?', function() {
+        angular.element(document.forms[0]).trigger('submit');
+      });
+    }
+    document.getElementById('search').focus();
   });
 
   $scope.openSideMenu = function() {

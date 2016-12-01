@@ -48,7 +48,7 @@
         <ion-header-bar class="bar-stable item-input-inset">
           <label class="item-input-wrapper">
             <i class="icon ion-ios-search placeholder-icon"></i>
-            <input type="search" placeholder="Book Title or ISBN" ng-model="sc.searchText">
+            <input id="search" type="search" placeholder="Book Title or ISBN" ng-model="sc.searchText">
           </label>
           <a class="button button-icon icon ion-navicon" ng-click="openSideMenu()"></a>
         </ion-header-bar>
@@ -57,7 +57,7 @@
       <ion-side-menus>
         <ion-side-menu-content style="background: url(./img/books-484766_1920.jpg) center; background-size: cover;">
           <ion-content class="has-footer" delegate-handle="usedBookListScroll">
-            <md-input-container class="md-block padding-vertical" style="top: 190px; margin: 20px;" ng-show="validateSearchInput()">
+            <md-input-container class="md-block padding-vertical" style="top: 120px; margin: 20px;" ng-show="validateSearchInput()">
               <label><i class="icon ion-search placeholder-icon"></i>책 검색어</label>
               <input ng-model="sc.searchText" ng-enter="insert()">
             </md-input-container>

@@ -11,8 +11,8 @@
     <div id="bookDetail_{{bookSeller.code}}" style="display:none;">
       <a ng-repeat="book in bookSeller.data" ng-click="sc.moveToSellerPage($event, book.uri)" href="#" class="item item-thumbnail-left" style="padding-top: 8px; padding-left: 74px; padding-right: 0px; padding-bottom: 8px;">
         <img src="{{book.img}}" style="width: 57px;">
-        <h2 ng-bind="book.title"></h2>
-        <p>{{book.author}}<span ng-if="book.author != null && book.publisher != null"> | </span>{{book.publisher}}</p>
+        <h2 ng-bind-html="book.title"></h2>
+        <p><span ng-bind-html="book.author"></span><span ng-if="book.author != null && book.publisher != null"> | </span><span ng-bind-html="book.publisher"></span></p>
         <p>{{book.seller}} <span ng-if="book.release != null">({{book.release}})</span></p>
         <p><span ng-if="bookSeller.code != 'y2'">{{book.originalprice}} → </span><strong class="assertive">{{book.sellprice}}</strong></p>
       </a>
