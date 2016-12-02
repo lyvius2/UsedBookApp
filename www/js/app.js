@@ -407,7 +407,7 @@ var app = angular.module('starter', ['ionic', 'ngRoute', 'ngMaterial', 'ngSaniti
   /* Buy : 책 검색 결과 모달 Template 정의 */
   $ionicModal.fromTemplateUrl('findBookResult.html', {
     scope: $scope,
-    animation:'slide-in-up'
+    animation: 'slide-in-up'
   }).then(function(modal){
     $scope.modal = modal;
   });
@@ -442,7 +442,7 @@ var app = angular.module('starter', ['ionic', 'ngRoute', 'ngMaterial', 'ngSaniti
     }
     angular.element('input[type=search]').attr('placeholder', placeholderText);
     if(params != '' && !isListOpen) {
-      showConfirm(section, '"' + parent.searchText + '" 로 검색하시겠습니까?', function() {
+      showConfirm(section, '"' + parent.searchText + '" 검색어로 검색하시겠습니까?', function() {
         angular.element(document.forms[0]).trigger('submit');
       });
     }
