@@ -237,8 +237,13 @@ var app = angular.module('starter', ['ionic', 'ngRoute', 'ngMaterial', 'ngSaniti
     }, 5000);
   };
   /* Sell : 중고책 매입 리스트에서 삭제 */
-  this.removeBook = function(index) {
-    $scope.sellBookList.splice(index, 1);
+  this.removeBook = function(sellBook, index) {
+    showConfirm('책 목록에서 삭제',
+      '"' + sellBook.title + '" 책을 목록에서 삭제하시겠습니까?',
+      function() {
+        $scope.sellBookList.splice(index, 1);
+      }
+    );
   };
   /* Sell : 중고책 상태를 변경 */
   this.changeStatus = function(event, target, status) {
