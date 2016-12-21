@@ -13,6 +13,7 @@ IONIC 프레임워크와 AngularJS로 개발한 간단한 하이브리드 앱입
 
 아래와 같은 IDE와 기술을 사용:
 
+* [JAVA Script](https://developer.mozilla.org/ko/docs/Web/JavaScript)
 * [AngularJS] - v1.5.3
 * [Ionic Framework] - v1.3.2. AngularJS 기반의 크로스플랫폼 프레임워크
 * [node.js] - Ionic Framework는 npm 생태계에서 설치 구동됨
