@@ -32,7 +32,7 @@ IONIC 프레임워크와 AngularJS로 개발한 간단한 하이브리드 앱입
 
 ![시작화면](http://res.cloudinary.com/dkbh91d9t/image/upload/v1482828460/IMG_2154_hzzqac.png "시작화면")
 ![초기검색](http://res.cloudinary.com/dkbh91d9t/image/upload/v1482828460/IMG_2150_ld2b3l.png "초기검색")
-![중고책 판매가 검색](http://res.cloudinary.com/dkbh91d9t/image/upload/v1482828460/IMG_2151_bbizoy.png "중고책 판매가 검색")
+![중고책 판매가 검색](http://res.cloudinary.com/dkbh91d9t/image/upload/v1482828460/IMG_2151_bbizoy.png "중고책 판매가 검색")  
 ![중고책 매각가 비교검색](http://res.cloudinary.com/dkbh91d9t/image/upload/v1482828460/IMG_2152_yorozl.png "중고책 매각가 비교검색")
 ![최고액 매입 서점 웹사이트로 이동](http://res.cloudinary.com/dkbh91d9t/image/upload/v1482828460/IMG_2153_q0dwui.png "최고액 매입 서점 웹사이트로 이동")
 
